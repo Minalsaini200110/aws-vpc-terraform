@@ -1,0 +1,42 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**/*.tf'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: 'us-east-1'
+
+      - name: Install Terraform
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb https://apt.releases.hashicorp.com stable main"
+          sudo apt-get update && sudo apt-get install terraform
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+
